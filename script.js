@@ -105,4 +105,62 @@ function animate() {
   requestAnimationFrame(animate);
 }
 
+function connectParticles(particles) {
+    for (let i = 0; i < particles.length; i++) {
+      for (let j = i + 1; j < particles.length; j++) {
+        const dx = particles[i].x - particles[j].x;
+        const dy = particles[i].y - particles[j].y;
+        const dist = Math.sqrt(dx * dx + dy * dy);
+
+        if (dist < 100) {
+          const alpha = 1 - dist / 100;
+          ctx.strokeStyle = `rgba(255, 255, 255, ${alpha})`;
+          ctx.beginPath();
+          ctx.moveTo(particles[i].x, particles[i].y);
+          ctx.lineTo(particles[j].x, particles[j].y);
+          ctx.stroke();
+        }
+      }
+    }
+  }
+
+  function generateTextShape(text, canvasWidth, canvasHeight) {
+    const shapePoints = [];
+
+    const offCanvas = document.createElement("canvas");
+    offCanvas.width = canvasWidth;
+    offCanvas.height = canvasHeight;
+    const offCtx = offCanvas.getContext("2d");
+
+    offCtx.fillStyle = "#fff";
+    offCtx.font = "bold 100px Arial";
+    offCtx.textAlign = "center";
+    offCtx.fillText(text, canvasWidth / 2, canvasHeight / 2);
+
+    const data = offCtx.getImageData(0, 0, canvasWidth, canvasHeight).data;
+
+    for (let y = 0; y < canvasHeight; y += 6) {
+      for (let x = 0; x < canvasWidth; x += 6) {
+        const i = (y * canvasWidth + x) * 4;
+        if (data[i + 3] > 128) {
+          shapePoints.push({ x, y });
+        }
+      }
+    }
+
+    return shapePoints;
+  }
+
+
+  draw(ctx) {
+    const speed = Math.sqrt(this.vx * this.vx + this.vy * this.vy);
+    const hue = Math.min(360, speed * 100); // hue shift by speed
+    ctx.fillStyle = `hsl(${hue}, 100%, 70%)`;
+    ctx.beginPath();
+    ctx.arc(this.x, this.y, this.size + speed * 0.5, 0, Math.PI * 2);
+    ctx.fill();
+  }
+
+
+
 animate();
